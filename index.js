@@ -1,22 +1,60 @@
 let myLeads = []
 let oldLeads = []
-const inputEl = document.getElementById("input-el")
-const inputBtn = document.getElementById("input-btn")
-const ulEl = document.getElementById("ul-el")
-const deleteBtn = document.getElementById("delete-btn")
-const restoreBtn = document.getElementById("restore-btn")
-const leadsFromLocalStorage = JSON.parse( localStorage.getItem("myLeads") )
+let oldLeadsAll = []
+const inputEl = document.getElementById("input-el") // Text Input
+const inputBtn = document.getElementById("input-btn") // Save Input
+const tabBtn = document.getElementById("tab-btn") // Save Tab
+const deleteBtn = document.getElementById("delete-btn") // Delete All
+const restoreBtn = document.getElementById("restore-btn") // Restore
+const ulEl = document.getElementById("ul-el") // List
+
+const leadsFromLocalStorage = JSON.parse( localStorage.getItem("myLeads") ) // Local Storage myLeads
+const oldLeadsFromLocalStorage = JSON.parse(localStorage.getItem("oldLeadsAll")) // Local Storage Old Leads
 
 if (leadsFromLocalStorage) {
     myLeads = leadsFromLocalStorage
-    console.log("myLeads:")
-    console.log(myLeads)
     render(myLeads)
 }
 
-// Refector the function so that it takes a parameter, leads, that it uses
-// instead of the global myLeads variable. Remember to update all invocations 
-// of the function as well.
+// if (oldLeadsFromLocalStorage) {
+//     oldLeadsAll = oldLeadsFromLocalStorage
+// }
+
+inputBtn.addEventListener("click", function() {
+    myLeads.push(inputEl.value)
+    inputEl.value = ""
+    localStorage.setItem("myLeads", JSON.stringify(myLeads) )
+    render(myLeads)
+})
+
+tabBtn.addEventListener("click", function(){    
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        myLeads.push(tabs[0].url)
+        localStorage.setItem("myLeads", JSON.stringify(myLeads) )
+        render(myLeads)
+    })
+})
+
+deleteBtn.addEventListener("dblclick", function() {
+    // localStorage.clear()
+    // Push myLeads to oldLeads array for session
+    if (myLeads.length) {
+        oldLeads.push(...myLeads) // Session Leads
+        // Adds to oldLeadsAll array in LocalStorage
+        // localStorage.setItem("oldLeadsAll", JSON.stringify(oldLeadsAll)) // All Old Leads
+        myLeads = []
+        localStorage.setItem("myLeads", JSON.stringify(myLeads))
+        render(myLeads)
+    }
+})
+
+// const clrBtn = document.getElementsByClassName("clr-btn") // Clear Single Entry
+// clrBtn.addEventListener("click", function(){
+//     console.log("Clear Entry Button")
+// })
+
+restoreBtn.addEventListener("click", restore)
+restoreBtn.addEventListener("dblclick", restoreAll)
 
 function render(leads) {
     let listItems = ""
@@ -26,49 +64,23 @@ function render(leads) {
                 <a target='_blank' href='${leads[i]}'>
                     ${leads[i]}
                 </a>
+                <a class="clr-btn">x</a>
             </li>
         `
     }
     ulEl.innerHTML = listItems
 }
 
-restoreBtn.addEventListener("dblclick", restore)
 function restore() {
     if (oldLeads.length) {
-        console.log("Truthy")
-        console.log("Restore:")
-        console.log("oldLeads:")
-        console.log(oldLeads)
-        console.log("myLeads:")
-        console.log(myLeads)
         myLeads.push(...oldLeads)
         oldLeads = []
-        console.log("oldLeads:")
-        console.log(oldLeads)
-        console.log("myLeads:")
-        console.log(myLeads)
-    } else {
-        console.log("Falsy")
+        localStorage.setItem("myLeads", JSON.stringify(myLeads))
+        render(myLeads)
     }
-    localStorage.setItem("myLeads", JSON.stringify(myLeads))
-    render(myLeads)
 }
 
-deleteBtn.addEventListener("dblclick", function() {
-    console.log("Delete:")
-    localStorage.clear()
-    oldLeads.push(...myLeads)
-    console.log("oldLeads:")
-    console.log(oldLeads)
-    myLeads = []
-    console.log("myLeads:")
-    console.log(myLeads)
-    render(myLeads)
-})
+function restoreAll() {
+        // oldLeads = JSON.parse(localStorage.getItem("oldLeads"))
 
-inputBtn.addEventListener("click", function() {
-    myLeads.push(inputEl.value)
-    inputEl.value = ""
-    localStorage.setItem("myLeads", JSON.stringify(myLeads) )
-    render(myLeads)
-})
+}
