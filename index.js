@@ -2,25 +2,33 @@ let myLeads = []
 let leadsSession = []
 let leadsHistory = []
 
-console.log(
-    `Initialize:
-    My Leads: ${myLeads}
-    History: ${leadsHistory}`
-)
-
-const inputEl = document.getElementById("input-el") // Text Input
-const inputBtn = document.getElementById("input-btn") // Save Input
-const tabBtn = document.getElementById("tab-btn") // Save Tab
-const deleteBtn = document.getElementById("delete-btn") // Delete All
-const sessionBtn = document.getElementById("session-btn") // Restore
-const historyShow = document.getElementById("history-show") // History Show
+// Text Input Field
+const inputEl = document.getElementById("input-el")
+// Save Input Button
+const inputBtn = document.getElementById("input-btn")
+// Save Current Tab
+const tabBtn = document.getElementById("tab-btn")
+// Clear List Button
+const deleteBtn = document.getElementById("delete-btn")
+// Restore Session Button
+const sessionBtn = document.getElementById("session-btn")
+sessionBtn.classList.add("hidden")
+let isRestoreDisplayed = false
+// Clear History Button
+const historyClear = document.getElementById("history-clear")
+historyClear.classList.add("hidden")
+// Show History Button
+const historyShow = document.getElementById("history-show")
+// Hide History Button
 const historyHide = document.getElementById("history-hide")
 historyHide.classList.add("hidden")
-let isHistoryDisplayed
-const ulEl = document.getElementById("ul-el") // List
-
-const leadsFromLocalStorage = JSON.parse(localStorage.getItem("myLeads")) // Local Storage myLeads
-const leadsHistoryFromLocalStorage = JSON.parse(localStorage.getItem("leadsHistory")) // Local Storage Old Leads
+let isHistoryDisplayed = false
+// List Items
+const ulEl = document.getElementById("ul-el")
+// Local Storage myLeads
+const leadsFromLocalStorage = JSON.parse(localStorage.getItem("myLeads"))
+// Local Storage Leads History
+const leadsHistoryFromLocalStorage = JSON.parse(localStorage.getItem("leadsHistory"))
 
 if (leadsFromLocalStorage) {
     myLeads = leadsFromLocalStorage
@@ -31,27 +39,25 @@ if (leadsHistoryFromLocalStorage) {
     leadsHistory = leadsHistoryFromLocalStorage
 }
 
-console.log(
-    `Update:
-    My Leads: Storage: ${myLeads}
-    History: Storage: ${leadsHistory}`
-)
-
 inputEl.addEventListener("keydown", inputEnter)
-
 inputBtn.addEventListener("click", input)
+sessionBtn.addEventListener("dblclick", restoreSession)
+historyClear.addEventListener("dblclick", clearHistory)
+historyShow.addEventListener("dblclick", showHistory)
+historyHide.addEventListener("dblclick", hideHistory)
 
 function input() {
-    console.log(
-        `Input:
-        Value: ${inputEl.value}
-        My Leads: ${myLeads}
-        Session: ${leadsSession}
-        History: ${leadsHistory}`
-    )
-
+    hideHistory()
+    deleteBtn.classList.remove("hidden")
     myLeads.push(inputEl.value)
-    leadsHistory.push(inputEl.value)
+    
+    if (leadsHistory.length) {
+        leadsHistory.push(inputEl.value)
+    } else {
+        leadsHistory.push(...myLeads)
+    }
+
+    inputEl.placeholder = ""
     inputEl.value = ""
     localStorage.setItem("myLeads", JSON.stringify(myLeads))
     localStorage.setItem("leadsHistory", JSON.stringify(leadsHistory))
@@ -73,39 +79,17 @@ tabBtn.addEventListener("click", function(){
 })
 
 deleteBtn.addEventListener("dblclick", function() {
-    // localStorage.clear()
     // Push myLeads to leadsSession array for session
-    console.log(
-        `Delete:
-        My Leads: ${myLeads}
-        Session: ${leadsSession}
-        History: ${leadsHistory}`
-    )
-
     if (myLeads.length || isHistoryDisplayed) {
         hideHistory()
+        deleteBtn.classList.add("hidden")
+        sessionBtn.classList.remove("hidden")
         leadsSession.push(...myLeads) // Session Leads
         myLeads = []
         localStorage.setItem("myLeads", JSON.stringify(myLeads))
     }
     render(myLeads)
-
-    console.log(
-        `Delete:
-        My Leads: ${myLeads}
-        Session: ${leadsSession}
-        History: ${leadsHistory}`
-    )
 })
-
-// const clrBtn = document.getElementsByClassName("clr-btn") // Clear Single Entry
-// clrBtn.addEventListener("click", function(){
-//     console.log("Clear Entry Button")
-// })
-
-sessionBtn.addEventListener("dblclick", restoreSession)
-historyShow.addEventListener("dblclick", showHistory)
-historyHide.addEventListener("dblclick", hideHistory)
 
 function render(leads) {
     let listItems = ""
@@ -123,56 +107,67 @@ function render(leads) {
 
 function restoreSession() {
     if (leadsSession.length) {
-        console.log(
-            `Restore:
-            My Leads: ${myLeads}
-            Session: ${leadsSession}`
-        )
+        hideHistory()
+        sessionBtn.classList.add("hidden")
+        deleteBtn.classList.remove("hidden")
 
         myLeads.push(...leadsSession)
         leadsSession = []
         localStorage.setItem("myLeads", JSON.stringify(myLeads))
         render(myLeads)
-        
-        console.log(
-            `Restore:
-            My Leads: ${myLeads}
-            Session: ${leadsSession}`
-        )
     }
 }
 
 function showHistory() {
     if (leadsHistory.length) {
-        console.log(
-            `History:
-            My Leads: ${myLeads}
-            Session: ${leadsSession}
-            History: ${leadsHistory}`
-        )
-
+        sessionBtn.classList.add("hidden")
+        deleteBtn.classList.add("hidden")
+        historyClear.classList.remove("hidden")
         historyShow.classList.add("hidden")
         historyHide.classList.remove("hidden")
 
-        // myLeads.push(...leadsHistory)
         isHistoryDisplayed = true
-        console.log(isHistoryDisplayed)
         render(leadsHistory)
-    
-        console.log(
-            `History:
-            My Leads: ${myLeads}
-            Session: ${leadsSession}
-            History: ${leadsHistory}`
-        )
+    } else {
+        inputEl.placeholder = "Add New Lead to Save History"
+        historyShow.textContent = "NO HISTORY"
+        setTimeout(() => {
+            historyShow.textContent = "SHOW HISTORY"
+        }, 2500);
     }
 }
 
 function hideHistory() {
     if (isHistoryDisplayed) {
         isHistoryDisplayed = false
+        historyClear.classList.add("hidden")
         historyHide.classList.add("hidden")
         historyShow.classList.remove("hidden")
+        if (leadsSession.length) {
+            sessionBtn.classList.remove("hidden")
+        } else {
+            deleteBtn.classList.remove("hidden")
+        }
+        if (myLeads.length) {
+            deleteBtn.classList.remove("hidden")
+        }
+        render(myLeads)
+    }
+}
+
+function clearHistory() {
+    if (leadsHistory.length) {
+        historyClear.classList.add("hidden")
+        historyHide.classList.add("hidden")
+        historyShow.classList.remove("hidden")
+        if (leadsSession.length) {
+            sessionBtn.classList.remove("hidden")
+        } else {
+            deleteBtn.classList.remove("hidden")
+        }
+
+        leadsHistory = []
+        localStorage.setItem("leadsHistory", JSON.stringify(leadsHistory))
         render(myLeads)
     }
 }

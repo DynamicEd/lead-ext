@@ -45,7 +45,7 @@ button:nth-child(1) {
 button:nth-child(2) {
     background: #41682a;
 }
-button:nth-child(3) {
+/* button:nth-child(3) {
     background: #5f9341;
     border-color: #41682a;
 }
@@ -55,10 +55,21 @@ button:nth-child(4) {
 button:nth-child(5) {
     background: #90be75;
 }
+button:nth-child(6) {
+    background: #90be75;
+} */
 
-#delete-btn {
+#history-show, 
+#history-hide {
+    background: #90be75;
+}
+
+#delete-btn, 
+#session-btn, 
+#history-clear {
     background: white;
     color: #5f9341;
+    border-color: #41682a;
 }
 
 ul {
