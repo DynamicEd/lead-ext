@@ -129,7 +129,7 @@ function showHistory() {
         isHistoryDisplayed = true
         render(leadsHistory)
     } else {
-        inputEl.placeholder = "Add New Lead to Save History"
+        inputEl.placeholder = "'Add' to Save History"
         historyShow.textContent = "NO HISTORY"
         setTimeout(() => {
             historyShow.textContent = "SHOW HISTORY"
